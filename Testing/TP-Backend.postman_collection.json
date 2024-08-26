@@ -1,0 +1,1186 @@
+{
+	"info": {
+		"_postman_id": "db6f289b-a03a-47c2-95d1-2c2c39bfdc03",
+		"name": "TP Backend",
+		"description": "### Endpoints:\n\nEn este proyecto se implementaron dos categorías de Endpoints, diferenciados por su accesibilidad:\n\n**Endpoints Accesibles:** Estos Endpoints son públicos y pueden ser accedidos desde el cliente. Están expuestos en el puerto 8080, facilitando la interacción del usuario con el sistema de alquiler de bicicletas. Cabe destacar que estos pueden ser accedidos tanto por clientes como por administradores, dependiendo de sus privilegios dentro del sistema.\n\n- Listar estaciones de la ciudad:\n    - GET: [http://localhost:8080/api/estacion](http://localhost:8080/api/estacion)\n    - Autorizado: CLIENTE  \n        Lista todas las estaciones de la ciudad.\n- Obtener estación por Id:\n    - GET: [http://localhost:8080/api/estacion/{id}](http://localhost:8080/api/estacion/{id})\n    - Autorizado: CLIENTE  \n        Trae la estación con el Id pasado por parámetro.\n- Crear nueva estación:\n    - POST: [http://localhost:8080/api/estacion](http://localhost:8080/api/estacion)\n    - Autorizado: ADMINISTRADOR  \n        Guarda una nueva estación en la base de datos con sus datos pasados por JSON en el cuerpo de la petición.\n- Obtener estación mas cercana:\n    - GET: [http://localhost:8080/api/estacion/cercana?latitud={Latitud}&amp;longitud={Longitud}](http://localhost:8080/api/estacion/cercana?latitud={Latitud}&longitud={Longitud})\n    - Autorizado: CLIENTE  \n        Trae la estación mas cercana a la latitud y longitud pasadas por parámetro.\n- Listar todos los alquileres:\n    - GET: [http://localhost:8080/api/alquiler](http://localhost:8080/api/alquiler)\n    - Autorizado: ADMINISTRADOR  \n        Lista todos los alquileres iniciados y finalizados.\n- Obtener alquiler por Id:\n    - GET: [http://localhost:8080/api/alquiler/{id}](http://localhost:8080/api/alquiler/{id})\n    - Autorizado: ADMINISTRADOR  \n        Trae el alquiler con el Id pasado por parámetro.\n- Iniciar un alquiler:\n    - POST: [http://localhost:8080/api/alquiler](http://localhost:8080/api/alquiler)\n    - Autorizado: CLIENTE  \n        Guarda un alquiler en la base de datos con sus datos iniciales.\n- Finalizar un alquiler:\n    - PATCH: [http://localhost:8080/api/alquiler](http://localhost:8080/api/alquiler)\n    - Autorizado: CLIENTE  \n        Actualiza un alquiler con los datos de devolución, calcula el monto final y informa todos los datos del alquiler con el monto expresado en la moneda que solicite el cliente, siendo no solicitada pesos argentinos por defecto.\n- Listar alquileres filtrados:\n    - GET: [http://localhost:8080/api/alquiler/filtrar?idEstRetiro={idRetiro}&amp;idEstDevo={idDevolucion}&amp;fechaRetiro={fechaRetiro}&amp;fechaDevo={fechaDevolucion}](http://localhost:8080/api/alquiler/filtrar?idEstRetiro={idRetiro}&idEstDevo={idDevolucion}&fechaRetiro={fechaRetiro}&fechaDevo={fechaDevolucion})\n    - Autorizado: ADMINISTRADOR  \n        Trae una lista de los alquileres filtrado por uno o mas de los siguientes datos: estación de retiro, pasada por Id, estación de devolución pasada por Id, fecha de retiro y fecha de devolución.\n\n**Endpoints Restringidos:** Los Endpoints en esta categoría no están accesibles directamente desde el cliente. Se encuentran expuestos en los puertos 8081 y 8082, y su acceso está restringido para uso interno o futuras actualizaciones.\n\n- Borrar estación por Id:\n    - DELETE: [http://localhost:8082/api/estacion/{id}](http://localhost:8082/api/estacion/{id})  \n        Borra la estación con el Id pasado por parámetro.\n- Actualizar estación:\n    - PUT: [http://localhost:8082/api/estacion](http://localhost:8082/api/estacion)  \n        Sobrescribe todos los datos de una estación pasada en el cuerpo de la petición con nuevos datos.\n- Obtener distancia entre estaciones:\n    - GET: [http://localhost:8082/api/estacion/distancia?estacion1={id1}&amp;estacion2={id2}](http://localhost:8082/api/estacion/distancia?estacion1={id1}&estacion2={id2})  \n        Trae la distancia entre 2 estaciones con sus Id parados por parámetro.\n- Listar tarifas:\n    - GET: [http://localhost:8081/api/tarifa](http://localhost:8081/api/tarifa)  \n        Lista todas las tarifas.\n- Obtener tarifa por Id:\n    - GET: [http://localhost:8081/api/tarifa/{id}](http://localhost:8081/api/tarifa/{id})  \n        Trae la tarifa con el Id pasado por parámetro.\n- Crear nueva tarifa:\n    - POST: [http://localhost:8081/api/tarifa](http://localhost:8081/api/tarifa)  \n        Guarda una nueva tarifa en la base de datos con sus datos pasados por JSON en el cuerpo de la petición.\n- Borrar tarifa por Id:\n    - DELETE: [http://localhost:8081/api/tarifa/{id}](http://localhost:8081/api/tarifa/{id})  \n        Borra la tarifa con el Id pasado por parámetro.\n- Actualizar tarifa:\n    - PUT: [http://localhost:8081/api/tarifa](http://localhost:8081/api/tarifa)  \n        Sobrescribe todos los datos de una tarifa pasada en el cuerpo de la petición con nuevos datos.\n- Borrar alquiler por Id:\n    - DELETE: [http://localhost:8081/api/alquiler/{id}](http://localhost:8081/api/alquiler/{id})  \n        Borra el alquiler con el Id pasado por parámetro.\n- Actualizar alquiler:\n    - PUT: [http://localhost:8081/api/alquiler](http://localhost:8081/api/alquiler)  \n        Sobrescribe todos los datos de un alquiler pasado en el cuerpo de la petición con nuevos datos.\n\nEstas separaciones se llevaron a cabo gracias a la implementación de API Gateway y Keycloak con Spring Security.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30204249"
+	},
+	"item": [
+		{
+			"name": "Estacion",
+			"item": [
+				{
+					"name": "Listado Estaciones",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/estacion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"estacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Estacion por Id",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/estacion/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"estacion",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Borrar estacion",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/estacion/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"estacion",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Agregar Estacion",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Gral. Bustos1111\",\r\n    \"creacion\": \"2023-10-04T00:40:12.000+00:00\",\r\n    \"latitud\": \"-31.3890572929164\",\r\n    \"longitud\": \"-64.1723735108364\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/estacion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"estacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Estacion",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 18,\r\n    \"nombre\": \"Gral. Bustos2\",\r\n    \"creacion\": \"2023-10-04T00:40:12.000+00:00\",\r\n    \"latitud\": \"-31.3890572929164\",\r\n    \"longitud\": \"-64.1723735108364\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/estacion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"estacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Estacion Cercana",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/estacion/cercana?latitud=-31.47872146162334&longitud=-64.19105812298827",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"estacion",
+								"cercana"
+							],
+							"query": [
+								{
+									"key": "latitud",
+									"value": "-31.47872146162334"
+								},
+								{
+									"key": "longitud",
+									"value": "-64.19105812298827"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Distancia entre Estaciones",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/estacion/distancia?estacion1=1&estacion2=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"estacion",
+								"distancia"
+							],
+							"query": [
+								{
+									"key": "estacion1",
+									"value": "1"
+								},
+								{
+									"key": "estacion2",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tarifa",
+			"item": [
+				{
+					"name": "Listado de Tarifas",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/tarifa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"tarifa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tarifa por Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/tarifa/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"tarifa",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Borrar Tarifa",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/tarifa/18",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"tarifa",
+								"18"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Agregar Tarifa",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"tipoTarifa\": 2,\r\n    \"definicion\": \"G\",\r\n    \"diaSemana\": 100,\r\n    \"diaMes\": 1002,\r\n    \"mes\": 1003,\r\n    \"anio\": null,\r\n    \"montoFijoAlq\": 300.0,\r\n    \"montoMinFrac\": 6.0,\r\n    \"montoKm\": 80.0,\r\n    \"montoHora\": 240.0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/tarifa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"tarifa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Tarifa",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 19,\r\n    \"tipoTarifa\": 1,\r\n    \"definicion\": \"S\",\r\n    \"diaSemana\": 1,\r\n    \"diaMes\": null,\r\n    \"mes\": null,\r\n    \"anio\": null,\r\n    \"montoFijoAlq\": 300.0,\r\n    \"montoMinFrac\": 6.0,\r\n    \"montoKm\": 80.0,\r\n    \"montoHora\": 240.0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/tarifa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"tarifa"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Alquiler",
+			"item": [
+				{
+					"name": "Listado de Alquileres",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/alquiler",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"alquiler"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Alquiler por Id",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/alquiler/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"alquiler",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Borrar Alquiler",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/alquiler/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"alquiler",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Iniciar Alquiler",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"idCliente\": 1,\r\n    \"idEstRetiro\": 1,\r\n    \"retiro\": \"2023-11-13T09:00:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/alquiler",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"alquiler"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Alquiler",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 1,\r\n    \"idCliente\": 3,\r\n    \"estado\": 1,\r\n    \"idEstRetiro\": 1,\r\n    \"idEstDevolucion\": 2,\r\n    \"retiro\": null,\r\n    \"devolucion\": null,\r\n    \"monto\": null,\r\n    \"idTarifa\": 3\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/alquiler",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"alquiler"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Finalizar Alquiler",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"alquilerId\" : 1,\r\n    \"estacionId\" : 4,\r\n    \"moneda\" : \"USD\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/alquiler/finalizado",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"alquiler",
+								"finalizado"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filtrar Lista Alquiler",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenName",
+									"value": "Administrador",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "tpi-scope",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "cliente-tpi",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "ZmiMMce6zh4xKHde1FFKbfkiThDyYpyn",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://labsys.frc.utn.edu.ar/aim/realms/backend-tps/protocol/openid-connect/auth",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/alquiler/filtrar?idEstRetiro=1&idEstDevo=4&fechaRetiro=2023-11-06T13:00:00&fechaDevo=2023-11-12T20:36:26.341",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"alquiler",
+								"filtrar"
+							],
+							"query": [
+								{
+									"key": "idEstRetiro",
+									"value": "1"
+								},
+								{
+									"key": "idEstDevo",
+									"value": "4"
+								},
+								{
+									"key": "fechaRetiro",
+									"value": "2023-11-06T13:00:00"
+								},
+								{
+									"key": "fechaDevo",
+									"value": "2023-11-12T20:36:26.341"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Moneda",
+			"item": [
+				{
+					"name": "API Moneda",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"moneda_destino\": \"USD\",\r\n    \"importe\": 1000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://34.82.105.125:8080/convertir",
+							"protocol": "http",
+							"host": [
+								"34",
+								"82",
+								"105",
+								"125"
+							],
+							"port": "8080",
+							"path": [
+								"convertir"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
